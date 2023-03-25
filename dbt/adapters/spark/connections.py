@@ -487,7 +487,7 @@ class SparkConnectionManager(SQLConnectionManager):
                     logger.warning(msg)
                     time.sleep(creds.connect_timeout)
                 else:
-                    raise dbt.exceptions.FailedToConnectError("failed to connect") from e
+                    raise dbt.exceptions.FailedToConnectError("failed to connect with error: {}".format(e)) from e
         else:
             raise exc
 
@@ -496,7 +496,7 @@ class SparkConnectionManager(SQLConnectionManager):
         return connection
 
 
-def build_ssl_transport(host, port, username, auth, kerberos_service_name,kerberos_host, password=None):
+def build_ssl_transport(host, port, username, auth, kerberos_service_name, kerberos_host, password=None):
     transport = None
     if port is None:
         port = 10000
@@ -520,7 +520,7 @@ def build_ssl_transport(host, port, username, auth, kerberos_service_name,kerber
                 # to be nonempty.
                 password = "x"
         if kerberos_host is None:
-            kerberos_host=host
+            kerberos_host = host
         def sasl_factory():
             sasl_client = sasl.Client()
             sasl_client.setAttr("host", kerberos_host)
