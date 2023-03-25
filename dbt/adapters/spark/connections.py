@@ -69,6 +69,7 @@ class SparkCredentials(Credentials):
     port: int = 443
     auth: Optional[str] = None
     kerberos_service_name: Optional[str] = None
+    kerberos_host: Optional[str] = None
     organization: str = "0"
     connect_retries: int = 0
     connect_timeout: int = 10
@@ -377,6 +378,7 @@ class SparkConnectionManager(SQLConnectionManager):
                             username=creds.user,
                             auth=creds.auth,
                             kerberos_service_name=creds.kerberos_service_name,
+                            kerberos_host=creds.kerberos_host,
                             password=creds.password,
                         )
                         conn = hive.connect(thrift_transport=transport)
@@ -387,6 +389,7 @@ class SparkConnectionManager(SQLConnectionManager):
                             username=creds.user,
                             auth=creds.auth,
                             kerberos_service_name=creds.kerberos_service_name,
+                            kerberos_host=creds.kerberos_host,
                             password=creds.password,
                         )  # noqa
                     handle = PyhiveConnectionWrapper(conn)
@@ -493,7 +496,7 @@ class SparkConnectionManager(SQLConnectionManager):
         return connection
 
 
-def build_ssl_transport(host, port, username, auth, kerberos_service_name, password=None):
+def build_ssl_transport(host, port, username, auth, kerberos_service_name,kerberos_host, password=None):
     transport = None
     if port is None:
         port = 10000
@@ -516,10 +519,11 @@ def build_ssl_transport(host, port, username, auth, kerberos_service_name, passw
                 # Password doesn't matter in NONE mode, just needs
                 # to be nonempty.
                 password = "x"
-
+        if kerberos_host is None:
+            kerberos_host=host
         def sasl_factory():
             sasl_client = sasl.Client()
-            sasl_client.setAttr("host", host)
+            sasl_client.setAttr("host", kerberos_host)
             if sasl_auth == "GSSAPI":
                 sasl_client.setAttr("service", kerberos_service_name)
             elif sasl_auth == "PLAIN":
