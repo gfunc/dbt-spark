@@ -43,7 +43,11 @@
   {%- if options is not none %}
     options (
       {%- for option in options -%}
-      {{ option }} "{{ options[option] }}" {% if not loop.last %}, {% endif %}
+        {% if options[option] is sequence and options[option] is not mapping and options[option] is not string %}
+          {{ option }} "{% for o in options[option] %} {{ o }} {% if not loop.last %}, {% endif %}{% endfor %}" {% if not loop.last %}, {% endif %}
+        {%- else %}
+          {{ option }} "{{ options[option] }}" {% if not loop.last %}, {% endif %}
+        {%- endif %}
       {%- endfor %}
     )
   {%- endif %}
